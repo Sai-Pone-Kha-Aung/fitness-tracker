@@ -1,0 +1,237 @@
+@model List<FitnessTracker.Models.ActivityRecord>
+@{
+    ViewData["Title"] = "Activities";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-list text-primary"></i>
+        My Activities
+    </h2>
+    <div>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="fas fa-plus"></i> Log New Activity
+        </a>
+        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.Any())
+{
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">@Model.Count</h3>
+                    <p class="text-muted mb-0">Total Activities</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">@Model.Sum(a => a.CaloriesBurned).ToString("F1")</h3>
+                    <p class="text-muted mb-0">Total Calories</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">@Model.Where(a => a.RecordedAt.Date == DateTime.Today).Count()</h3>
+                    <p class="text-muted mb-0">Today's Activities</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">@Model.GroupBy(a => a.ActivityType).Count()</h3>
+                    <p class="text-muted mb-0">Activity Types</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history"></i>
+                Activity History
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Activity</th>
+                            <th>Metrics</th>
+                            <th>Calories</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var activity in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>@activity.RecordedAt.ToString("MMM dd")</strong><br/>
+                                        <small class="text-muted">@activity.RecordedAt.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas @GetActivityIcon(activity.ActivityType) text-primary me-2"></i>
+                                        <div>
+                                            <strong>@activity.ActivityType</strong><br/>
+                                            @if (activity.RecordedAt.Date == DateTime.Today)
+                                            {
+                                                <span class="badge bg-success">Today</span>
+                                            }
+                                            else if (activity.RecordedAt.Date == DateTime.Today.AddDays(-1))
+                                            {
+                                                <span class="badge bg-warning">Yesterday</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <div><strong>@activity.Metric1Label:</strong> @activity.Metric1.ToString("F1")</div>
+                                        <div><strong>@activity.Metric2Label:</strong> @activity.Metric2.ToString("F1")</div>
+                                        <div><strong>@activity.Metric3Label:</strong> @activity.Metric3.ToString("F1")</div>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success fs-6">
+                                        @activity.CaloriesBurned.ToString("F1") cal
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@activity.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@activity.Id" 
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteActivity(@activity.Id)" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Type Breakdown -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-pie text-info"></i>
+                Activity Breakdown
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var group in Model.GroupBy(a => a.ActivityType).OrderByDescending(g => g.Sum(a => a.CaloriesBurned)))
+                {
+                    <div class="col-md-2 col-sm-4 mb-3">
+                        <div class="text-center">
+                            <i class="fas @GetActivityIcon(group.Key) fa-2x text-primary mb-2"></i>
+                            <h6>@group.Key</h6>
+                            <div class="text-muted">
+                                <small>@group.Count() activities</small><br/>
+                                <strong>@group.Sum(a => a.CaloriesBurned).ToString("F1") cal</strong>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+            <h3 class="text-muted">No Activities Yet</h3>
+            <p class="text-muted mb-4">Start your fitness journey by logging your first activity!</p>
+            <a asp-action="Create" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus"></i> Log Your First Activity
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this activity? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetActivityIcon(FitnessTracker.Models.ActivityType activityType)
+    {
+        return activityType switch
+        {
+            FitnessTracker.Models.ActivityType.Walking => "fa-walking",
+            FitnessTracker.Models.ActivityType.Swimming => "fa-swimmer",
+            FitnessTracker.Models.ActivityType.Running => "fa-running",
+            FitnessTracker.Models.ActivityType.Cycling => "fa-biking",
+            FitnessTracker.Models.ActivityType.WeightLifting => "fa-dumbbell",
+            FitnessTracker.Models.ActivityType.Yoga => "fa-leaf",
+            _ => "fa-dumbbell"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function deleteActivity(id) {
+            $('#deleteForm').attr('action', '@Url.Action("Delete")/' + id);
+            $('#deleteModal').modal('show');
+        }
+    </script>
+}

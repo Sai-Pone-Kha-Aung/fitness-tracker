@@ -1,0 +1,242 @@
+@model FitnessTracker.ViewModels.ActivityRecordViewModel
+@{
+    ViewData["Title"] = "Log Activity";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-plus-circle text-success"></i>
+        Log New Activity
+    </h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-list"></i> View All Activities
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-dumbbell"></i>
+                    Activity Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="ActivityType" class="form-label">Activity Type</label>
+                        <select asp-for="ActivityType" class="form-select form-select-lg" id="activityTypeSelect">
+                            <option value="">Select an activity...</option>
+                            <option value="Walking">Walking</option>
+                            <option value="Swimming">Swimming</option>
+                            <option value="Running">Running</option>
+                            <option value="Cycling">Cycling</option>
+                            <option value="WeightLifting">Weight Lifting</option>
+                            <option value="Yoga">Yoga</option>
+                        </select>
+                        <span asp-validation-for="ActivityType" class="text-danger"></span>
+                    </div>
+                    
+                    <div id="metricsSection" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Metric1" class="form-label" id="metric1Label">Metric 1</label>
+                                    <input asp-for="Metric1" class="form-control" step="0.1" />
+                                    <span asp-validation-for="Metric1" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Metric2" class="form-label" id="metric2Label">Metric 2</label>
+                                    <input asp-for="Metric2" class="form-control" step="0.1" />
+                                    <span asp-validation-for="Metric2" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Metric3" class="form-label" id="metric3Label">Metric 3</label>
+                                    <input asp-for="Metric3" class="form-control" step="0.1" />
+                                    <span asp-validation-for="Metric3" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Log Activity
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Activity Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="activityInfo">
+                    <p class="text-muted">Select an activity type to see specific metrics and tips.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-fire text-warning"></i>
+                    Calorie Estimation
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Calories will be automatically calculated based on your activity metrics using research-backed formulas.
+                </p>
+                <small class="text-muted">
+                    The calculation considers activity intensity, duration, and other relevant factors for accurate tracking.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const activityInfo = {
+            Walking: {
+                metric1: 'Steps',
+                metric2: 'Distance (km)',
+                metric3: 'Time (minutes)',
+                info: `
+                    <h6><i class="fas fa-walking text-success"></i> Walking</h6>
+                    <ul>
+                        <li><strong>Steps:</strong> Total number of steps taken</li>
+                        <li><strong>Distance:</strong> Distance covered in kilometers</li>
+                        <li><strong>Time:</strong> Duration in minutes</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Aim for 10,000 steps daily for optimal health benefits!</small>
+                    </div>
+                `
+            },
+            Swimming: {
+                metric1: 'Laps',
+                metric2: 'Time (minutes)',
+                metric3: 'Avg Heart Rate',
+                info: `
+                    <h6><i class="fas fa-swimmer text-primary"></i> Swimming</h6>
+                    <ul>
+                        <li><strong>Laps:</strong> Number of pool laps completed</li>
+                        <li><strong>Time:</strong> Duration in minutes</li>
+                        <li><strong>Heart Rate:</strong> Average BPM (50-220)</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Swimming is excellent full-body cardio with low joint impact!</small>
+                    </div>
+                `
+            },
+            Running: {
+                metric1: 'Distance (km)',
+                metric2: 'Time (minutes)',
+                metric3: 'Avg Heart Rate',
+                info: `
+                    <h6><i class="fas fa-running text-danger"></i> Running</h6>
+                    <ul>
+                        <li><strong>Distance:</strong> Distance covered in kilometers</li>
+                        <li><strong>Time:</strong> Duration in minutes</li>
+                        <li><strong>Heart Rate:</strong> Average BPM (50-220)</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Start slow and gradually increase distance to prevent injury!</small>
+                    </div>
+                `
+            },
+            Cycling: {
+                metric1: 'Distance (km)',
+                metric2: 'Time (minutes)',
+                metric3: 'Avg Heart Rate',
+                info: `
+                    <h6><i class="fas fa-biking text-warning"></i> Cycling</h6>
+                    <ul>
+                        <li><strong>Distance:</strong> Distance covered in kilometers</li>
+                        <li><strong>Time:</strong> Duration in minutes</li>
+                        <li><strong>Heart Rate:</strong> Average BPM (50-220)</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Great for building leg strength and cardiovascular fitness!</small>
+                    </div>
+                `
+            },
+            WeightLifting: {
+                metric1: 'Sets',
+                metric2: 'Weight (kg)',
+                metric3: 'Reps',
+                info: `
+                    <h6><i class="fas fa-dumbbell text-dark"></i> Weight Lifting</h6>
+                    <ul>
+                        <li><strong>Sets:</strong> Number of sets performed</li>
+                        <li><strong>Weight:</strong> Weight lifted in kilograms</li>
+                        <li><strong>Reps:</strong> Total repetitions across all sets</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Focus on proper form over heavy weights for best results!</small>
+                    </div>
+                `
+            },
+            Yoga: {
+                metric1: 'Poses',
+                metric2: 'Time (minutes)',
+                metric3: 'Intensity (1-10)',
+                info: `
+                    <h6><i class="fas fa-leaf text-success"></i> Yoga</h6>
+                    <ul>
+                        <li><strong>Poses:</strong> Number of different poses practiced</li>
+                        <li><strong>Time:</strong> Duration in minutes</li>
+                        <li><strong>Intensity:</strong> Difficulty level (1=gentle, 10=power yoga)</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <small><strong>Tip:</strong> Regular yoga improves flexibility, strength, and mental wellness!</small>
+                    </div>
+                `
+            }
+        };
+
+        $('#activityTypeSelect').change(function() {
+            const selectedActivity = $(this).val();
+            
+            if (selectedActivity && activityInfo[selectedActivity]) {
+                const info = activityInfo[selectedActivity];
+                
+                // Update metric labels
+                $('#metric1Label').text(info.metric1);
+                $('#metric2Label').text(info.metric2);
+                $('#metric3Label').text(info.metric3);
+                
+                // Update activity info
+                $('#activityInfo').html(info.info);
+                
+                // Show metrics section
+                $('#metricsSection').show();
+            } else {
+                $('#metricsSection').hide();
+                $('#activityInfo').html('<p class="text-muted">Select an activity type to see specific metrics and tips.</p>');
+            }
+        });
+
+        // Trigger change event if there's a pre-selected value (for validation errors)
+        if ($('#activityTypeSelect').val()) {
+            $('#activityTypeSelect').trigger('change');
+        }
+    </script>
+}

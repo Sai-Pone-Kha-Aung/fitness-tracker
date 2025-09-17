@@ -1,0 +1,182 @@
+@model FitnessTracker.ViewModels.GoalViewModel
+@{
+    ViewData["Title"] = "Goals";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-bullseye text-warning"></i>
+        Fitness Goals
+    </h2>
+    <a asp-action="Dashboard" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog"></i>
+                    Set Your Daily Calorie Goal
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Goals" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="CalorieGoal" class="form-label">Daily Calorie Goal</label>
+                        <div class="input-group">
+                            <input asp-for="CalorieGoal" class="form-control form-control-lg" placeholder="300" />
+                            <span class="input-group-text">calories</span>
+                        </div>
+                        <span asp-validation-for="CalorieGoal" class="text-danger"></span>
+                        <div class="form-text">
+                            Set a realistic daily goal. Recommended: 200-500 calories for beginners, 500-800 for intermediate, 800+ for advanced.
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning btn-lg">
+                        <i class="fas fa-save"></i> Update Goal
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-info"></i>
+                    Goal Setting Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user-plus text-success"></i> Beginners</h6>
+                        <ul class="mb-3">
+                            <li>Start with 200-300 calories per day</li>
+                            <li>Focus on consistency over intensity</li>
+                            <li>Gradually increase your goal</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-dumbbell text-warning"></i> Experienced</h6>
+                        <ul class="mb-3">
+                            <li>500-800 calories for weight loss</li>
+                            <li>300-500 for maintenance</li>
+                            <li>Adjust based on activity level</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Pro Tip:</strong> Your daily goal should be challenging but achievable. 
+                    It's better to consistently hit a smaller goal than to frequently miss a larger one!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-success"></i>
+                    Current Progress
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <h2 class="text-primary">@Model.CurrentCaloriesBurned.ToString("F1")</h2>
+                    <p class="text-muted mb-0">Calories Burned Today</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h3 class="text-warning">@Model.CalorieGoal</h3>
+                    <p class="text-muted mb-0">Current Goal</p>
+                </div>
+                
+                <div class="progress mb-3" style="height: 20px;">
+                    <div class="progress-bar @(Model.IsGoalAchieved ? "bg-success" : "bg-primary")" 
+                         role="progressbar" 
+                         style="width: @Math.Min(100, Model.ProgressPercentage)%">
+                        @Model.ProgressPercentage.ToString("F1")%
+                    </div>
+                </div>
+                
+                @if (Model.IsGoalAchieved)
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-trophy"></i><br/>
+                        <strong>Goal Achieved!</strong><br/>
+                        Great job today!
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        <i class="fas fa-fire"></i><br/>
+                        <strong>@Model.RemainingCalories.ToString("F1")</strong><br/>
+                        calories to go
+                    </p>
+                }
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle"></i>
+                    Activity Calories
+                </h5>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <strong>Approximate calories per activity:</strong><br/>
+                    • Walking (30 min): 150-200 cal<br/>
+                    • Running (30 min): 300-500 cal<br/>
+                    • Swimming (30 min): 250-400 cal<br/>
+                    • Cycling (30 min): 200-350 cal<br/>
+                    • Weight Lifting (30 min): 180-250 cal<br/>
+                    • Yoga (30 min): 120-200 cal
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Goal recommendation based on input
+        $('#CalorieGoal').on('input', function() {
+            var goal = parseInt($(this).val());
+            var recommendation = '';
+            
+            if (goal < 200) {
+                recommendation = 'This might be too low for effective fitness tracking.';
+            } else if (goal <= 300) {
+                recommendation = 'Good starting goal for beginners.';
+            } else if (goal <= 500) {
+                recommendation = 'Moderate goal suitable for most people.';
+            } else if (goal <= 800) {
+                recommendation = 'Ambitious goal for experienced fitness enthusiasts.';
+            } else {
+                recommendation = 'Very high goal - make sure this is realistic for you.';
+            }
+            
+            // You could display this recommendation in the UI
+        });
+    </script>
+}

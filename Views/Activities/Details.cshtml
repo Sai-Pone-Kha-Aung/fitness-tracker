@@ -1,0 +1,258 @@
+@model FitnessTracker.Models.ActivityRecord
+@{
+    ViewData["Title"] = "Activity Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-eye text-info"></i>
+        Activity Details
+    </h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-list"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas @GetActivityIcon(Model.ActivityType) text-primary"></i>
+                    @Model.ActivityType Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h6 class="text-muted">Recorded On</h6>
+                            <p class="fs-5">
+                                <i class="fas fa-calendar text-primary"></i>
+                                @Model.RecordedAt.ToString("dddd, MMMM dd, yyyy")
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-clock"></i>
+                                @Model.RecordedAt.ToString("h:mm tt")
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h6 class="text-muted">Calories Burned</h6>
+                            <h2 class="text-success">
+                                <i class="fas fa-fire"></i>
+                                @Model.CaloriesBurned.ToString("F1") cal
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="text-muted mb-3">Activity Metrics</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="text-primary">@Model.Metric1.ToString("F1")</h5>
+                                <p class="text-muted mb-0">@Model.Metric1Label</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="text-success">@Model.Metric2.ToString("F1")</h5>
+                                <p class="text-muted mb-0">@Model.Metric2Label</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="text-warning">@Model.Metric3.ToString("F1")</h5>
+                                <p class="text-muted mb-0">@Model.Metric3Label</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-info"></i>
+                    Activity Stats
+                </h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var activityStats = GetActivityStats(Model.ActivityType);
+                }
+                <div class="mb-3">
+                    <strong>Activity Type:</strong><br/>
+                    <span class="badge bg-primary">@Model.ActivityType</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Intensity Level:</strong><br/>
+                    @{
+                        var intensity = GetIntensityLevel(Model);
+                    }
+                    <span class="badge @GetIntensityBadgeClass(intensity)">@intensity</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Performance:</strong><br/>
+                    <small class="text-muted">@GetPerformanceTip(Model)</small>
+                </div>
+                
+                <hr>
+                
+                <h6>Activity Benefits:</h6>
+                <ul class="list-unstyled">
+                    @foreach (var benefit in activityStats)
+                    {
+                        <li><i class="fas fa-check text-success"></i> @benefit</li>
+                    }
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog text-secondary"></i>
+                    Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Edit Activity
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="deleteActivity(@Model.Id)">
+                        <i class="fas fa-trash"></i> Delete Activity
+                    </button>
+                    <a asp-action="Create" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Log Similar Activity
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this activity? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetActivityIcon(FitnessTracker.Models.ActivityType activityType)
+    {
+        return activityType switch
+        {
+            FitnessTracker.Models.ActivityType.Walking => "fa-walking",
+            FitnessTracker.Models.ActivityType.Swimming => "fa-swimmer",
+            FitnessTracker.Models.ActivityType.Running => "fa-running",
+            FitnessTracker.Models.ActivityType.Cycling => "fa-biking",
+            FitnessTracker.Models.ActivityType.WeightLifting => "fa-dumbbell",
+            FitnessTracker.Models.ActivityType.Yoga => "fa-leaf",
+            _ => "fa-dumbbell"
+        };
+    }
+    
+    string GetIntensityLevel(FitnessTracker.Models.ActivityRecord activity)
+    {
+        return activity.ActivityType switch
+        {
+            FitnessTracker.Models.ActivityType.Walking when activity.Metric2 / (activity.Metric3 / 60.0) < 4.0 => "Light",
+            FitnessTracker.Models.ActivityType.Walking when activity.Metric2 / (activity.Metric3 / 60.0) < 6.5 => "Moderate",
+            FitnessTracker.Models.ActivityType.Walking => "Vigorous",
+            FitnessTracker.Models.ActivityType.Running when activity.Metric1 / (activity.Metric2 / 60.0) < 8.0 => "Light",
+            FitnessTracker.Models.ActivityType.Running when activity.Metric1 / (activity.Metric2 / 60.0) < 12.0 => "Moderate",
+            FitnessTracker.Models.ActivityType.Running => "Vigorous",
+            FitnessTracker.Models.ActivityType.Yoga when activity.Metric3 <= 3 => "Gentle",
+            FitnessTracker.Models.ActivityType.Yoga when activity.Metric3 <= 7 => "Moderate",
+            FitnessTracker.Models.ActivityType.Yoga => "Power",
+            _ => "Moderate"
+        };
+    }
+    
+    string GetIntensityBadgeClass(string intensity)
+    {
+        return intensity switch
+        {
+            "Light" or "Gentle" => "bg-info",
+            "Moderate" => "bg-warning",
+            "Vigorous" or "Power" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    
+    string GetPerformanceTip(FitnessTracker.Models.ActivityRecord activity)
+    {
+        return activity.ActivityType switch
+        {
+            FitnessTracker.Models.ActivityType.Walking => $"Great job! You burned {activity.CaloriesBurned:F0} calories walking {activity.Metric1:F0} steps.",
+            FitnessTracker.Models.ActivityType.Running => $"Excellent run! You maintained a pace of {(activity.Metric1 / (activity.Metric2 / 60.0)):F1} km/h.",
+            FitnessTracker.Models.ActivityType.Swimming => $"Nice swim session! You completed {activity.Metric1:F0} laps in {activity.Metric2:F0} minutes.",
+            FitnessTracker.Models.ActivityType.Cycling => $"Good ride! You covered {activity.Metric1:F1}km at an average pace.",
+            FitnessTracker.Models.ActivityType.WeightLifting => $"Strong workout! You completed {activity.Metric1:F0} sets with {activity.Metric2:F0}kg.",
+            FitnessTracker.Models.ActivityType.Yoga => $"Peaceful practice! You held {activity.Metric1:F0} poses for {activity.Metric2:F0} minutes.",
+            _ => "Great workout session!"
+        };
+    }
+    
+    string[] GetActivityStats(FitnessTracker.Models.ActivityType activityType)
+    {
+        return activityType switch
+        {
+            FitnessTracker.Models.ActivityType.Walking => new[] { "Improves cardiovascular health", "Strengthens bones", "Boosts mood", "Burns calories" },
+            FitnessTracker.Models.ActivityType.Running => new[] { "Excellent cardio workout", "Strengthens legs", "Burns calories fast", "Improves endurance" },
+            FitnessTracker.Models.ActivityType.Swimming => new[] { "Full-body workout", "Low impact on joints", "Builds muscle strength", "Great for all fitness levels" },
+            FitnessTracker.Models.ActivityType.Cycling => new[] { "Strengthens legs", "Low impact exercise", "Improves balance", "Environmentally friendly" },
+            FitnessTracker.Models.ActivityType.WeightLifting => new[] { "Builds muscle mass", "Increases bone density", "Boosts metabolism", "Improves posture" },
+            FitnessTracker.Models.ActivityType.Yoga => new[] { "Improves flexibility", "Reduces stress", "Enhances balance", "Promotes mindfulness" },
+            _ => new[] { "Promotes fitness", "Improves health" }
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        function deleteActivity(id) {
+            $('#deleteForm').attr('action', '@Url.Action("Delete")/' + id);
+            $('#deleteModal').modal('show');
+        }
+    </script>
+}

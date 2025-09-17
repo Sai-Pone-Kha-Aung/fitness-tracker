@@ -1,0 +1,81 @@
+@model FitnessTracker.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">
+                    <i class="fas fa-dumbbell text-primary"></i>
+                    Fitness Tracker
+                </h3>
+                <p class="text-center text-muted">Sign in to your account</p>
+            </div>
+            <div class="card-body">
+                @if (TempData["InfoMessage"] != null)
+                {
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        @TempData["InfoMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <input asp-for="Username" class="form-control" placeholder="Enter your username" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">
+                    Don't have an account? 
+                    <a asp-action="Register" class="text-decoration-none">Register here</a>
+                </p>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Account Requirements</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Username:</h6>
+                    <ul class="mb-3">
+                        <li>Only letters and numbers allowed</li>
+                    </ul>
+                    
+                    <h6>Password:</h6>
+                    <ul class="mb-0">
+                        <li>Exactly 12 characters</li>
+                        <li>At least one uppercase letter</li>
+                        <li>At least one lowercase letter</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

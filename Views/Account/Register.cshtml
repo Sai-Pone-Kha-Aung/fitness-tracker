@@ -1,0 +1,114 @@
+@model FitnessTracker.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">
+                    <i class="fas fa-user-plus text-success"></i>
+                    Create Account
+                </h3>
+                <p class="text-center text-muted">Join Fitness Tracker today</p>
+            </div>
+            <div class="card-body">
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label"></label>
+                                <input asp-for="Username" class="form-control" placeholder="Username (letters and numbers only)" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                                <div class="form-text">Only letters and numbers allowed</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CalorieGoal" class="form-label"></label>
+                                <input asp-for="CalorieGoal" class="form-control" placeholder="300" />
+                                <span asp-validation-for="CalorieGoal" class="text-danger"></span>
+                                <div class="form-text">Calories to burn daily</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control" placeholder="12 characters required" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <div class="form-text">Exactly 12 characters, 1 upper, 1 lower</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">
+                    Already have an account? 
+                    <a asp-action="Login" class="text-decoration-none">Sign in here</a>
+                </p>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list-check"></i> Password Requirements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="mb-0">
+                                <li>Exactly 12 characters long</li>
+                                <li>At least one uppercase letter (A-Z)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="mb-0">
+                                <li>At least one lowercase letter (a-z)</li>
+                                <li>Example: MyPassword123</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Real-time password validation
+        $('#Password').on('input', function() {
+            var password = $(this).val();
+            var requirements = {
+                length: password.length === 12,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password)
+            };
+            
+            // You could add visual indicators here
+        });
+    </script>
+}
